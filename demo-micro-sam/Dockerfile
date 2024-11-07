@@ -1,9 +1,9 @@
 FROM nvidia/cuda:12.1.1-cudnn8-devel-ubuntu22.04
 
-ARG UID
-ARG GID
-ARG USER
-ARG GROUP
+# ARG UID
+# ARG GID
+# ARG USER
+# ARG GROUP
 
 SHELL [ "/bin/bash", "--login", "-c" ]
 
@@ -12,28 +12,20 @@ SHELL [ "/bin/bash", "--login", "-c" ]
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     apt-utils \
-    cmake \
-    git \
     curl \
     ca-certificates \
     sudo \
+    wget \
     bzip2 \
     libx11-6 \
-    git \
-    wget \
     ssh-client \
-    libjpeg-dev \
     bash-completion \
     libgl1-mesa-dev \
-    ffmpeg \
     tmux \
     screen \
     htop \
     cifs-utils \
-    zip \
-    unzip \
     uidmap \
-    vim \
     nano \
     libjemalloc-dev \
     openssh-client \
@@ -43,28 +35,29 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user
-ENV HOME /home/$USER
+RUN groupadd -r raysam_user && useradd -r -g raysam_user raysam_user
 
-RUN addgroup --gid $GID $GROUP \
-    && adduser --disabled-password \
-    --gecos "root" \
-    --uid $UID \
-    --gid $GID \
-    --shell /bin/bash \
-    --home $HOME \
-    $USER 
+# Add the user raysam_user to the sudo group
+RUN echo "raysam_user ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+ENV HOME /home/raysam_user
+
 WORKDIR $HOME
+
+# Change ownership of the application directory to the non-root user
+RUN chown -R raysam_user:raysam_user $HOME
+
 # switch to that user
-# USER $USER
+USER $USER
 
 # install miniconda
 ENV MINICONDA_VERSION py312_24.9.2-0
 
 ENV CONDA_DIR $HOME/miniconda3
-RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-$MINICONDA_VERSION-Linux-x86_64.sh -O ~/miniconda.sh \
-    && chmod +x ~/miniconda.sh \
-    && ~/miniconda.sh -b -p $CONDA_DIR \
-    && rm ~/miniconda.sh
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-$MINICONDA_VERSION-Linux-x86_64.sh -O $HOME/miniconda.sh \
+    && chmod +x $HOME/miniconda.sh \
+    && $HOME/miniconda.sh -b -p $CONDA_DIR \
+    && rm $HOME/miniconda.sh
 
 # add conda to path (so that we can just use conda install <package> in the rest of the dockerfile)
 ENV PATH $CONDA_DIR/bin:$PATH
@@ -90,7 +83,6 @@ RUN echo "source activate micro-sam" > ~/.bashrc
 ENV PATH $HOME/miniconda3/envs/dev/bin:$PATH
 
 RUN conda install -c anaconda pip \ 
-    # && conda install seaborn colorama \
     && conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia --yes \
     && conda install -c pytorch -c conda-forge micro_sam --yes \
     && conda install -c conda-forge matplotlib \ 
@@ -115,7 +107,6 @@ RUN pip install --upgrade pip \
     # --upgrade scikit-learn
 
 RUN pip install -U "ray[default]"
-
 
 ENV SHELL=/bin/bash
 
