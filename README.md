@@ -15,7 +15,7 @@ This is the project repository for WASP Scalable Data Science and Distributed Ma
 - Thanadol Sutantiwanichkul
 - Songtao Cheng
 - Nils Mechtel 
-- Jim Guo
+- Jingyu Guo
 
 ## Project Plan
 
