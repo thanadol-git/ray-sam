@@ -1,0 +1,3 @@
+[submodule "micro-sam-ray"]
+	path = micro-sam-ray
+	url = git@github.com:cccoolll/micro-sam-ray.git
