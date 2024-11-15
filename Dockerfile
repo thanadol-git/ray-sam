@@ -72,31 +72,29 @@ RUN conda init bash
 # ENV ENV_PREFIX $HOME/env
 
 RUN conda update --name base -c defaults conda \
-    && conda create --name micro-sam python=3.11.9 \
+    && conda create --name raysam python=3.11.9 \
     && conda clean --all --yes
     
 # Activate the created dev env
-SHELL ["conda", "run", "--no-capture-output", "-n", "micro-sam", "/bin/bash", "-c"]
-RUN echo "source activate micro-sam" > ~/.bashrc
+SHELL ["conda", "run", "--no-capture-output", "-n", "raysam", "/bin/bash", "-c"]
+RUN echo "source activate raysam" > ~/.bashrc
 
 # ENV PATH /opt/conda/envs/dev/bin:$PATH
 ENV PATH $HOME/miniconda3/envs/dev/bin:$PATH
 
 RUN conda install -c anaconda pip \ 
     && conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia --yes \
-    && conda install -c pytorch -c conda-forge micro_sam --yes \
     && conda install -c conda-forge matplotlib \ 
-        torch_em \
+        natsort python-xxhash segment-anything python-elf kornia zarr pooch \
         pandas numpy pillow \
         scikit-learn \
         scikit-image \
-        pyyaml \
+        pyyaml --yes \
     && conda clean --all --yes
 
 RUN pip install --upgrade pip \
     && pip3 install --no-cache-dir jupyter jupyterlab \
     h5py \
-    natsort \
     torchsummary \
     timm \
     tensorboard \
@@ -106,7 +104,7 @@ RUN pip install --upgrade pip \
     opencv-python  
     # --upgrade scikit-learn
 
-RUN pip install -U "ray[default]"
+RUN pip install -U "ray[data,train,tune,serve]"
 
 ENV SHELL=/bin/bash
 
@@ -116,7 +114,7 @@ ENV LANG=C.UTF-8
 
 RUN env > /root/env.txt #&& cron -f
 
-RUN /bin/bash -c "source activate micro-sam"
+RUN /bin/bash -c "source activate raysam"
 
 CMD ["/bin/bash"]
 # CMD [ "jupyter", "lab", "--no-browser", "--ip", "0.0.0.0" ]

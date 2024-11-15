@@ -23,3 +23,19 @@ This is the project repository for WASP Scalable Data Science and Distributed Ma
 
 ## Installation 
 
+### Docker 
+To build the docker image
+```
+docker build -f Dockerfile -t raysam .
+```
+
+To run the docker image
+```
+docker run -it --shm-size 60G --name raysam --gpus all -v YourLocalPath:/storage/raysam_user/ raysam /bin/bash
+```
+
+NOTE: Replace *YourLocalPath* with your own path.
+
+## TODO List
+- [ ] Move the dataloaders into the training function
+- [ ] Modify the training function ```sam_training.train_sam_worker``` for ray
