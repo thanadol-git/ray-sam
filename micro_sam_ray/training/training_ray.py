@@ -173,7 +173,7 @@ def train_sam_worker(train_config: Dict):
     # Unpack config
     name = train_config["name"]
     model_type = train_config["model_type"]
-    train_loader = train_config["train_loader"]
+    train_loader = train_config["train_loader"]     # DataLoader should be initialized in the function
     val_loader = train_config["val_loader"]
     n_epochs = train_config.get("n_epochs", 100)
     early_stopping = train_config.get("early_stopping", 10)
@@ -307,21 +307,132 @@ def train_sam_worker(train_config: Dict):
             train_loader.sampler.set_epoch(epoch)
         
         # Run training iteration
-        train_metrics = trainer.train_iteration()
-        val_metrics = trainer.validate()
+        # TODO: training is done by DefaultTrainer.fit() method. We need to run it here for each epoch.
+        # train_metrics = trainer.train_iteration()
+        # val_metrics = trainer.validate()
+        
+        """Still debugging, start"""
+        # Run training iteration
+        model.train()
+        
+        input_check_done = False
+        n_iter = 0
+        loss_train, loss_unetr_train, model_iou_train = 0.0, 0.0, 0.0
+        t_per_iter = time.time()
+        for x, y in train_loader:
+            labels_instances = y[:, 0, ...].unsqueeze(1)
+            labels_for_unetr = y[:, 1:, ...]
+
+            input_check_done = trainer._check_input_normalization(x, input_check_done)
+
+            optimizer.zero_grad()
+
+            with torch.autocast(device_type="cuda"):
+                # 1. train for the interactive segmentation
+                (loss, mask_loss, iou_regression_loss, model_iou,
+                 sampled_binary_y) = trainer._interactive_train_iteration(x, labels_instances)
+
+            # backprop(loss)
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
+
+            with torch.autocast(device_type="cuda"):
+                # 2. train for the automatic instance segmentation
+                unetr_loss = trainer._instance_iteration(x, labels_for_unetr)
+
+            # backprop(unetr_loss)
+            unetr_loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
+            
+            loss_train += loss.item()
+            loss_unetr_train += unetr_loss.item()
+            model_iou_train += model_iou.item()
+
+            # if self.logger is not None:
+            #     lr = [pm["lr"] for pm in self.optimizer.param_groups][0]
+            #     samples = sampled_binary_y if self._iteration % self.log_image_interval == 0 else None
+            #     self.logger.log_train(
+            #         self._iteration, loss, lr, x, labels_instances, samples,
+            #         mask_loss, iou_regression_loss, model_iou, unetr_loss
+            #     )
+
+            n_iter += 1
+            # if self._iteration >= self.max_iteration:
+            #     break
+            # progress.update(1)
+
+        loss_train /= len(val_loader)
+        loss_unetr_train /= len(val_loader)
+        model_iou_train /= len(val_loader)
+        t_per_iter = (time.time() - t_per_iter) / n_iter
+        metrics_train = {
+            "epoch": epoch,
+            "loss": loss_train,
+            "instance_loss": loss_unetr_train,
+            "model_iou": model_iou_train,
+            "time_per_iter": t_per_iter
+        }
+        
+        # Run validation
+        model.eval()
+
+        input_check_done = False
+
+        val_iteration = 0
+        metric_val, loss_val, model_iou_val = 0.0, 0.0, 0.0
+        with torch.no_grad():
+            for x, y in val_loader:
+                labels_instances = y[:, 0, ...].unsqueeze(1)
+                labels_for_unetr = y[:, 1:, ...]
+
+                input_check_done = trainer._check_input_normalization(x, input_check_done)
+
+                with torch.autocast(device_type="cuda"):
+                    # 1. validate for the interactive segmentation
+                    (loss, mask_loss, iou_regression_loss, model_iou,
+                     sampled_binary_y, metric) = trainer._interactive_val_iteration(x, labels_instances, val_iteration)
+
+                with torch.autocast(device_type="cuda"):
+                    # 2. validate for the automatic instance segmentation
+                    unetr_loss, unetr_metric = trainer._instance_iteration(x, labels_for_unetr, metric_for_val=True)
+
+                loss_val += loss.item()
+                metric_val += metric.item() + (unetr_metric.item() / 3)
+                model_iou_val += model_iou.item()
+                val_iteration += 1
+
+        loss_val /= len(val_loader)
+        metric_val /= len(val_loader)
+        model_iou_val /= len(val_loader)
+        metrics_val = {
+            "epoch": epoch,
+            "loss": loss_val,
+            "instance_loss": unetr_loss,
+            "model_iou": model_iou_val
+        }
+
+        # if self.logger is not None:
+        #     self.logger.log_validation(
+        #         self._iteration, metric_val, loss_val, x, labels_instances, sampled_binary_y,
+        #         mask_loss, iou_regression_loss, model_iou_val, unetr_loss
+        #     )
+        
+        """Still debugging, end"""
         
         # Report metrics to Ray
         metrics = {
             "epoch": epoch,
-            "train_loss": train_metrics["loss"],
-            "val_loss": val_metrics["loss"],
+            "train_loss": metrics_train["loss"],
+            "val_loss": metrics_val["loss"],
         }
         
         # Add additional metrics if available
-        if "instance_loss" in train_metrics:
-            metrics["train_instance_loss"] = train_metrics["instance_loss"]
-        if "instance_loss" in val_metrics:
-            metrics["val_instance_loss"] = val_metrics["instance_loss"]
+        if "instance_loss" in metrics_train:
+            metrics["train_instance_loss"] = metrics_train["instance_loss"]
+        if "instance_loss" in metric_val:
+            metrics["val_instance_loss"] = metric_val["instance_loss"]
         
         # Report metrics to Ray
         ray.train.report(metrics)
@@ -525,11 +636,11 @@ def default_sam_loader_distributed(**kwargs) -> DataLoader:
     ds = default_sam_dataset(**sam_ds_kwargs)
 
     # Add DistributedSampler for distributed training
-    sampler = torch.utils.data.DistributedSampler(ds)
+    # sampler = torch.utils.data.DistributedSampler(ds)
 
     # Update loader kwargs to use the distributed sampler
     loader_kwargs = {
-        "sampler": sampler,
+        # "sampler": sampler,
         "shuffle": False,  # Shuffle is handled by DistributedSampler
         **extra_kwargs
     }
