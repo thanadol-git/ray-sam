@@ -4,7 +4,6 @@
 *.models/
 *.trg_dir/
 *.tif
-*.png
 *.zip
 *.pt
 

@@ -257,7 +257,7 @@ def train_sam_worker(train_config: Dict):
         unetr = ray.train.torch.prepare_model(unetr)
 
         # Get the parameters for SAM and the decoder from UNETR
-        joint_model_params = [params for params in model.parameters()]  # sam parameters
+        x = [params for params in model.parameters()]  # sam parameters
         for param_name, params in unetr.named_parameters():  # unetr's decoder parameters
             if not param_name.startswith("encoder"):
                 joint_model_params.append(params)
