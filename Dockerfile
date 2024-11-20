@@ -29,6 +29,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     nano \
     libjemalloc-dev \
     openssh-client \
+    libjpeg-dev \
     libpng-dev \
     libopenmpi-dev \
     mpich \

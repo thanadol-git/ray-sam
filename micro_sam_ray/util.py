@@ -202,6 +202,8 @@ def get_device(device: Optional[Union[str, torch.device]] = None) -> Union[str, 
                 raise RuntimeError("PyTorch MPS backend is not available or is not built correctly.")
         elif device_type.lower() == "cpu":
             pass  # cpu is always available
+        elif device_type.lower() == "ray":
+            pass
         else:
             raise RuntimeError(f"Unsupported device: {device}\n"
                                "Please choose from 'cpu', 'cuda', or 'mps'.")
@@ -261,6 +263,13 @@ def _load_checkpoint(checkpoint_path):
         model_state = OrderedDict(
             [(k[len(sam_prefix):] if k.startswith(sam_prefix) else k, v) for k, v in model_state.items()]
         )
+    elif "model_state_dict" in state:
+        model_state = state["model_state_dict"]
+        model_state = {k.replace("module.", ""): v for k, v in state["model_state_dict"].items()}
+        sam_prefix = "sam."
+        model_state = OrderedDict(
+            [(k[len(sam_prefix):] if k.startswith(sam_prefix) else k, v) for k, v in model_state.items()]
+        )
     else:
         model_state = state
 
@@ -314,7 +323,7 @@ def get_sam_model(
     Returns:
         The segment anything predictor.
     """
-    device = get_device(device)
+    # device = get_device(device) if device != "ray" else None
 
     # We support passing a local filepath to a checkpoint.
     # In this case we do not download any weights but just use the local weight file,
@@ -334,6 +343,7 @@ def get_sam_model(
             decoder_name, progressbar=True
         ) if decoder_name in model_registry.registry else None
 
+        print(f"Downloaded {model_type} model and {decoder_name} decoder.")
     # checkpoint_path has been passed, we use it instead of downloading a model.
     else:
         # Check if the file exists and raise an error otherwise.
@@ -380,7 +390,8 @@ def get_sam_model(
     else:
         sam.load_state_dict(model_state)
 
-    sam.to(device=device)
+    if device is not None:
+        sam.to(device=device) 
 
     predictor = SamPredictor(sam)
     predictor.model_type = abbreviated_model_type
@@ -389,7 +400,9 @@ def get_sam_model(
 
     # Add the decoder to the state if we have one and if the state is returned.
     if decoder_path is not None and return_state:
-        state["decoder_state"] = torch.load(decoder_path, map_location=device, weights_only=False)
+        state["decoder_state"] = torch.load(decoder_path, 
+                                            map_location=device if device is not None else "cpu", 
+                                            weights_only=False)
 
     if return_sam and return_state:
         return predictor, sam, state

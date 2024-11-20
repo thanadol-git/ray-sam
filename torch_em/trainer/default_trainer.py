@@ -42,11 +42,12 @@ class DefaultTrainer:
         save_root: Optional[str] = None,
         compile_model: Optional[Union[bool, str]] = None,
         rank: Optional[int] = None,
+        use_ray: Optional[bool] = False,
     ):
-        if name is None and not issubclass(logger, WandbLogger):
+        if not use_ray and name is None and not issubclass(logger, WandbLogger):
             raise TypeError("Name cannot be None if not using the WandbLogger")
 
-        if not all(hasattr(loader, "shuffle") for loader in [train_loader, val_loader]):
+        if not use_ray and not all(hasattr(loader, "shuffle") for loader in [train_loader, val_loader]):
             raise ValueError(f"{self.__class__} requires each dataloader to have 'shuffle' attribute.")
 
         self._generate_name = name is None
@@ -58,7 +59,7 @@ class DefaultTrainer:
         self.loss = loss
         self.optimizer = optimizer
         self.metric = metric
-        self.device = torch.device(device)
+        self.device = torch.device(device) 
         self.lr_scheduler = lr_scheduler
         self.log_image_interval = log_image_interval
         self.save_root = save_root

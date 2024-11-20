@@ -39,5 +39,6 @@ NOTE: Replace *YourLocalPath* with your own path.
 ## TODO List
 - [ ] Move the dataloaders into the training function
 - [ ] Modify the training function ```sam_training.train_sam_worker``` for ray
+- [x] Now the training function is working with ray. See the ```debug_sam_finetuning_ray.py```. Refer to the notebook ```sam_finetuning_ray.ipynb``` for data preparation.
 
 NOTE: The ```sam_finetuning_ray``` notebook can now be debugged and run on the local machine within a docker container, with an error triggered by the ```result = trainer.fit()``` as it's not adapted. --Jim 

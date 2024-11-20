@@ -779,7 +779,8 @@ def get_unetr(
                 unetr_state_dict[k] = decoder_state[k]
         unetr.load_state_dict(unetr_state_dict)
 
-    unetr.to(device)
+    if device != "ray":
+        unetr.to(device)
     return unetr
 
 

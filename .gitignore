@@ -2,8 +2,11 @@
 
 # Demo notebooks
 *.models/
-*.data/
 *.trg_dir/
+*.tif
+*.png
+*.zip
+*.pt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -5,7 +5,7 @@ from glob import glob
 from tqdm import tqdm
 from contextlib import contextmanager, nullcontext
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
-
+from collections import OrderedDict
 import imageio.v3 as imageio
 
 import torch
@@ -15,7 +15,7 @@ from torch.utils.data import DataLoader, Dataset
 
 import ray
 import ray.train
-from ray.train import ScalingConfig
+from ray.train import ScalingConfig, Checkpoint
 from ray.train.torch import TorchTrainer
 
 import torch_em
@@ -36,6 +36,28 @@ from .util import get_trainable_sam_model, ConvertToSamInputs, require_8bit
 
 
 FilePath = Union[str, os.PathLike]
+
+
+# Some functions are copied from the original SAM training script
+def _check_input_normalization(x, input_check_done):
+        # The expected data range of the SAM model is 8bit (0-255).
+        # It can easily happen that data is normalized beforehand in training.
+        # For some reasons we don't fully understand this still works, but it
+        # should still be avoided and is very detrimental in some settings
+        # (e.g. when freezing the image encoder)
+        # We check once per epoch if the data seems to be normalized already and
+        # raise a warning if this is the case.
+        if not input_check_done:
+            data_min, data_max = x.min(), x.max()
+            if (data_min < 0) or (data_max < 1):
+                warnings.warn(
+                    "It looks like you are normalizing the training data."
+                    "The SAM model takes care of normalization, so it is better to not do this."
+                    "We recommend to remove data normalization and input data in the range [0, 255]."
+                )
+            input_check_done = True
+
+        return input_check_done
 
 
 def _check_loader(loader, with_segmentation_decoder, name=None, verify_n_labels_in_loader=None):
@@ -181,8 +203,9 @@ def train_sam_worker(train_config: Dict):
     checkpoint_path = train_config.get("checkpoint_path", None)
     with_segmentation_decoder = train_config.get("with_segmentation_decoder", True)
     freeze = train_config.get("freeze", None)
-    device = train_config.get("device", None)
-    lr = train_config.get("lr", 1e-5)
+    # device = train_config.get("device", None)
+    lr = train_config.get("lr", 1e-4)
+    wd = train_config.get("wd", 1e-2)
     n_sub_iteration = train_config.get("n_sub_iteration", 8)
     save_root = train_config.get("save_root", None)
     mask_prob = train_config.get("mask_prob", 0.5)
@@ -196,14 +219,14 @@ def train_sam_worker(train_config: Dict):
     t_start = time.time()
 
     # Check loaders
-    _check_loader(train_loader, with_segmentation_decoder, "train")
-    _check_loader(val_loader, with_segmentation_decoder, "val")
+    # _check_loader(train_loader, with_segmentation_decoder, "train")
+    # _check_loader(val_loader, with_segmentation_decoder, "val")
 
     # Prepare data loaders for distributed training
     train_loader = ray.train.torch.prepare_data_loader(train_loader)
     val_loader = ray.train.torch.prepare_data_loader(val_loader)
 
-    device = get_device(device)
+    device = ray.train.torch.get_device()
 
     # Get the trainable segment anything model
     model, state = get_trainable_sam_model(
@@ -216,12 +239,9 @@ def train_sam_worker(train_config: Dict):
         **model_kwargs
     )
 
-    # Prepare model for distributed training
-    model = ray.train.torch.prepare_model(model)
-
     # Create inputs converter
     convert_inputs = ConvertToSamInputs(transform=model.transform, box_distortion_factor=0.025)
-
+    
     # Set up optimizer and scheduler kwargs
     if scheduler_kwargs is None:
         scheduler_kwargs = {"mode": "min", "factor": 0.9, "patience": 3, "verbose": True}
@@ -242,7 +262,7 @@ def train_sam_worker(train_config: Dict):
             if not param_name.startswith("encoder"):
                 joint_model_params.append(params)
 
-        optimizer = optimizer_class(joint_model_params, lr=lr)
+        optimizer = optimizer_class(joint_model_params, lr=lr, weight_decay=wd)
         scheduler = scheduler_class(optimizer=optimizer, **scheduler_kwargs)
 
         # Set up trainer with instance segmentation
@@ -268,6 +288,7 @@ def train_sam_worker(train_config: Dict):
             instance_metric=instance_seg_loss,
             early_stopping=early_stopping,
             mask_prob=mask_prob,
+            use_ray=True,
         )
     else:
         # Set up standard SAM trainer
@@ -292,6 +313,7 @@ def train_sam_worker(train_config: Dict):
             early_stopping=early_stopping,
             mask_prob=mask_prob,
             save_root=save_root,
+            use_ray=True,
         )
 
     # Set up training parameters
@@ -300,6 +322,13 @@ def train_sam_worker(train_config: Dict):
     else:
         trainer_fit_params = {"iterations": n_iterations}
 
+    # Prepare model for distributed training
+    model = ray.train.torch.prepare_model(model)
+    
+    trainer.model = model.module if isinstance(model, torch.nn.parallel.DistributedDataParallel) else model
+    trainer.optimizer = optimizer
+    trainer.lr_scheduler = scheduler
+    trainer.unetr = unetr
     # Training loop
     for epoch in range(n_epochs):
         if ray.train.get_context().get_world_size() > 1:
@@ -323,7 +352,7 @@ def train_sam_worker(train_config: Dict):
             labels_instances = y[:, 0, ...].unsqueeze(1)
             labels_for_unetr = y[:, 1:, ...]
 
-            input_check_done = trainer._check_input_normalization(x, input_check_done)
+            input_check_done = _check_input_normalization(x, input_check_done)
 
             optimizer.zero_grad()
 
@@ -381,13 +410,14 @@ def train_sam_worker(train_config: Dict):
         input_check_done = False
 
         val_iteration = 0
-        metric_val, loss_val, model_iou_val = 0.0, 0.0, 0.0
+        best_metric = float("inf")
+        metric_val, loss_val, unetr_loss_val, model_iou_val = 0.0, 0.0, 0.0, 0.0
         with torch.no_grad():
             for x, y in val_loader:
                 labels_instances = y[:, 0, ...].unsqueeze(1)
                 labels_for_unetr = y[:, 1:, ...]
 
-                input_check_done = trainer._check_input_normalization(x, input_check_done)
+                input_check_done = _check_input_normalization(x, input_check_done)
 
                 with torch.autocast(device_type="cuda"):
                     # 1. validate for the interactive segmentation
@@ -399,6 +429,7 @@ def train_sam_worker(train_config: Dict):
                     unetr_loss, unetr_metric = trainer._instance_iteration(x, labels_for_unetr, metric_for_val=True)
 
                 loss_val += loss.item()
+                unetr_loss_val += unetr_loss.item()
                 metric_val += metric.item() + (unetr_metric.item() / 3)
                 model_iou_val += model_iou.item()
                 val_iteration += 1
@@ -409,8 +440,9 @@ def train_sam_worker(train_config: Dict):
         metrics_val = {
             "epoch": epoch,
             "loss": loss_val,
-            "instance_loss": unetr_loss,
-            "model_iou": model_iou_val
+            "instance_loss": unetr_loss_val,
+            "model_iou": model_iou_val,
+            "metric_val": metric_val
         }
 
         # if self.logger is not None:
@@ -418,30 +450,49 @@ def train_sam_worker(train_config: Dict):
         #         self._iteration, metric_val, loss_val, x, labels_instances, sampled_binary_y,
         #         mask_loss, iou_regression_loss, model_iou_val, unetr_loss
         #     )
-        
-        """Still debugging, end"""
-        
+                
         # Report metrics to Ray
         metrics = {
             "epoch": epoch,
-            "train_loss": metrics_train["loss"],
-            "val_loss": metrics_val["loss"],
+            "train": metrics_train,
+            "val": metrics_val
         }
-        
-        # Add additional metrics if available
-        if "instance_loss" in metrics_train:
-            metrics["train_instance_loss"] = metrics_train["instance_loss"]
-        if "instance_loss" in metric_val:
-            metrics["val_instance_loss"] = metric_val["instance_loss"]
+
+        # save_checkpoint
+        if metric_val < best_metric:
+            best_metric = metric_val
+            best_epoch = epoch
+            if save_root is not None:
+                checkpoint_dir = os.path.join(save_root, "checkpoints")
+                os.makedirs(checkpoint_dir, exist_ok=True)
+                checkpoint_path = os.path.join(checkpoint_dir, f"checkpoint_best.pt")
+                current_unetr_state = unetr.state_dict()
+                decoder_state = []
+                for k, v in current_unetr_state.items():
+                    if not k.startswith("encoder"):
+                        decoder_state.append((k, v))
+                decoder_state = OrderedDict(decoder_state)
+
+                torch.save({
+                    'best_epoch': best_epoch,
+                    'model_state': model.state_dict(),
+                    'decoder_state': decoder_state,
+                    'optimizer_state_dict': optimizer.state_dict(),
+                    'scheduler_state_dict': scheduler.state_dict(),
+                    'metrics_train': metrics_train,
+                    'metrics_val': metrics_val,
+                    }, checkpoint_path)
+                checkpoint_ray = Checkpoint.from_directory(checkpoint_dir)
         
         # Report metrics to Ray
-        ray.train.report(metrics)
+        ray.train.report(metrics, checkpoint=checkpoint_ray)
         
-        # Handle early stopping
-        if trainer.early_stopping is not None:
-            if trainer.early_stopping.should_stop():
-                print(f"Early stopping triggered at epoch {epoch}")
-                break
+        # Handle early stopping 
+        # TODO: not implemented yet
+        # if trainer.early_stopping is not None:
+        #     if trainer.early_stopping.should_stop():
+        #         print(f"Early stopping triggered at epoch {epoch}")
+        #         break
 
     # Print training time
     t_run = time.time() - t_start
@@ -641,7 +692,7 @@ def default_sam_loader_distributed(**kwargs) -> DataLoader:
     # Update loader kwargs to use the distributed sampler
     loader_kwargs = {
         # "sampler": sampler,
-        "shuffle": False,  # Shuffle is handled by DistributedSampler
+        "shuffle": True,  # Shuffle is handled by DistributedSampler
         **extra_kwargs
     }
 

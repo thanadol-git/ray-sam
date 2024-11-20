@@ -67,7 +67,7 @@ def get_trainable_sam_model(
         The trainable segment anything model.
     """
     # set the device here so that the correct one is passed to TrainableSAM below
-    device = get_device(device)
+    # device = get_device(device)
     _, sam, state = get_sam_model(
         model_type=model_type,
         device=device,
@@ -195,7 +195,7 @@ class ConvertToSamInputs:
         batched_sampled_cell_ids_list = []
 
         for image, gt in zip(x, y):
-            gt = gt.squeeze().numpy().astype(np.int64)
+            gt = gt.squeeze().cpu().numpy().astype(np.int64)
             box_prompts, point_prompts, point_label_prompts, sampled_cell_ids = self._get_prompt_lists(
                 gt, n_samples, prompt_generator,
             )
