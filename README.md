@@ -31,7 +31,7 @@ docker build -f Dockerfile -t raysam:2.24.0 .
 
 To run the docker image
 ```
-docker run -it --shm-size 60G --name raysam --gpus all -v YourLocalPath:/storage/raysam_user/ raysam /bin/bash
+docker run -it --shm-size 60G --name raysam --gpus all -v YourLocalPath:/storage/raysam_user/ raysam:2.24.0 /bin/bash
 ```
 
 NOTE: Replace *YourLocalPath* with your own path.
