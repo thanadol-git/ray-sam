@@ -244,7 +244,7 @@ def train_sam_worker(train_config: Dict):
     
     # Set up optimizer and scheduler kwargs
     if scheduler_kwargs is None:
-        scheduler_kwargs = {"mode": "min", "factor": 0.9, "patience": 3, "verbose": True}
+        scheduler_kwargs = {"mode": "min", "factor": 0.9, "patience": 2, "verbose": True}
 
     # Handle segmentation decoder case
     if with_segmentation_decoder:
@@ -254,15 +254,14 @@ def train_sam_worker(train_config: Dict):
             decoder_state=state.get("decoder_state", None),
             device=device,
         )
-        unetr = ray.train.torch.prepare_model(unetr)
-
+        
         # Get the parameters for SAM and the decoder from UNETR
-        x = [params for params in model.parameters()]  # sam parameters
+        joint_model_params = [params for params in model.parameters()]  # sam parameters
         for param_name, params in unetr.named_parameters():  # unetr's decoder parameters
             if not param_name.startswith("encoder"):
                 joint_model_params.append(params)
 
-        optimizer = optimizer_class(joint_model_params, lr=lr, weight_decay=wd)
+        optimizer = optimizer_class(joint_model_params, lr=lr, weight_decay=wd, amsgrad=True)
         scheduler = scheduler_class(optimizer=optimizer, **scheduler_kwargs)
 
         # Set up trainer with instance segmentation
@@ -324,12 +323,14 @@ def train_sam_worker(train_config: Dict):
 
     # Prepare model for distributed training
     model = ray.train.torch.prepare_model(model)
+    unetr = ray.train.torch.prepare_model(unetr)
     
     trainer.model = model.module if isinstance(model, torch.nn.parallel.DistributedDataParallel) else model
     trainer.optimizer = optimizer
     trainer.lr_scheduler = scheduler
     trainer.unetr = unetr
     # Training loop
+    best_metric = float("inf")
     for epoch in range(n_epochs):
         if ray.train.get_context().get_world_size() > 1:
             # Required for distributed sampling
@@ -410,7 +411,6 @@ def train_sam_worker(train_config: Dict):
         input_check_done = False
 
         val_iteration = 0
-        best_metric = float("inf")
         metric_val, loss_val, unetr_loss_val, model_iou_val = 0.0, 0.0, 0.0, 0.0
         with torch.no_grad():
             for x, y in val_loader:

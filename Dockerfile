@@ -5,7 +5,7 @@ FROM nvidia/cuda:12.1.1-cudnn8-devel-ubuntu22.04
 # ARG USER
 # ARG GROUP
 
-SHELL [ "/bin/bash", "--login", "-c" ]
+# SHELL [ "/bin/bash", "--login", "-c" ]
 
 # install utilities
 # RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
@@ -21,12 +21,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ssh-client \
     bash-completion \
     libgl1-mesa-dev \
-    tmux \
-    screen \
-    htop \
     cifs-utils \
     uidmap \
-    nano \
     libjemalloc-dev \
     openssh-client \
     libjpeg-dev \
@@ -86,15 +82,15 @@ ENV PATH $HOME/miniconda3/envs/dev/bin:$PATH
 RUN conda install -c anaconda pip \ 
     && conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia --yes \
     && conda install -c conda-forge matplotlib \ 
-        natsort python-xxhash segment-anything python-elf kornia zarr pooch \
+        natsort python-xxhash segment-anything \
+        python-elf kornia zarr pooch \
         pandas numpy pillow \
-        scikit-learn \
-        scikit-image \
+        scikit-learn scikit-image \
         pyyaml --yes \
     && conda clean --all --yes
 
 RUN pip install --upgrade pip \
-    && pip3 install --no-cache-dir jupyter jupyterlab \
+    && pip3 install --no-cache-dir -U jupyter jupyterlab \
     h5py \
     torchsummary \
     timm \
@@ -102,7 +98,6 @@ RUN pip install --upgrade pip \
     einops \
     torch-tb-profiler \
     pyclean \
-    opencv-python  
     # --upgrade scikit-learn
 
 RUN pip install -U "ray[data,train,tune,serve]==2.24.0"
@@ -115,7 +110,7 @@ ENV LANG=C.UTF-8
 
 RUN env > /root/env.txt #&& cron -f
 
-RUN /bin/bash -c "source activate raysam"
+# RUN /bin/bash -c "source activate raysam"
 
 CMD ["/bin/bash"]
 # CMD [ "jupyter", "lab", "--no-browser", "--ip", "0.0.0.0" ]

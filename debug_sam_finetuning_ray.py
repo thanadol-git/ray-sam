@@ -132,7 +132,7 @@ def debug_notebook(training=True, inference=False):
 
     # All hyperparameters for training
     n_objects_per_batch = 5  # the number of objects per batch that will be sampled
-    n_epochs = 10  # how long we train (in epochs)
+    n_epochs = 5  # how long we train (in epochs)
     model_type = "vit_b"  # using vit_b for faster training
     checkpoint_name = "sam_hela"
 
@@ -143,11 +143,11 @@ def debug_notebook(training=True, inference=False):
 
         # Configure the scaling for distributed training
         scaling_config = ScalingConfig(
-            num_workers=1,  # number of worker processes
+            num_workers=2,  # number of worker processes
             use_gpu=True,  # use GPU
             resources_per_worker={
-                "CPU": 16,  # limit CPU cores per worker
-                "GPU": 2,  # each worker gets 2 GPUs
+                "CPU": 8,  # limit CPU cores per worker
+                "GPU": 1,  # each worker gets 2 GPUs
             },
         )
 

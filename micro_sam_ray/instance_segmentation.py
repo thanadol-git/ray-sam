@@ -773,9 +773,15 @@ def get_unetr(
         resize_input=True,
     )
     if decoder_state is not None:
+        decoder_state = {k.replace("module.", ""): v for k, v in decoder_state.items()}
+        # for k, v in decoder_state.items():
+        #     print(f"Key: {k}")
+        # print("decoder_state: ", decoder_state)
         unetr_state_dict = unetr.state_dict()
+        # print("unetr_state_dict: ", unetr_state_dict)
         for k, v in unetr_state_dict.items():
             if not k.startswith("encoder"):
+                # print(f"Key: {k}")
                 unetr_state_dict[k] = decoder_state[k]
         unetr.load_state_dict(unetr_state_dict)
 
