@@ -259,6 +259,7 @@ def _load_checkpoint(checkpoint_path):
     if "model_state" in state:
         # Copy the model weights from torch_em's training format.
         model_state = state["model_state"]
+        model_state = {k.replace("module.", ""): v for k, v in state["model_state"].items()}
         sam_prefix = "sam."
         model_state = OrderedDict(
             [(k[len(sam_prefix):] if k.startswith(sam_prefix) else k, v) for k, v in model_state.items()]
