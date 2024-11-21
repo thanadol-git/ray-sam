@@ -105,7 +105,7 @@ RUN pip install --upgrade pip \
     opencv-python  
     # --upgrade scikit-learn
 
-RUN pip install -U "ray[data,train,tune,serve]"
+RUN pip install -U "ray[data,train,tune,serve]==2.24.0"
 
 ENV SHELL=/bin/bash
 
@@ -119,3 +119,4 @@ RUN /bin/bash -c "source activate raysam"
 
 CMD ["/bin/bash"]
 # CMD [ "jupyter", "lab", "--no-browser", "--ip", "0.0.0.0" ]
+LABEL org.opencontainers.image.source="https://github.com/thanadol-git/RaySam/"
