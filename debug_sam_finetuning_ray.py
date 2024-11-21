@@ -132,7 +132,7 @@ def debug_notebook(training=True, inference=False):
 
     # All hyperparameters for training
     n_objects_per_batch = 5  # the number of objects per batch that will be sampled
-    n_epochs = 5  # how long we train (in epochs)
+    n_epochs = 1  # how long we train (in epochs)
     model_type = "vit_b"  # using vit_b for faster training
     checkpoint_name = "sam_hela"
 

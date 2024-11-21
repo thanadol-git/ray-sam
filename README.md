@@ -26,7 +26,7 @@ This is the project repository for WASP Scalable Data Science and Distributed Ma
 ### Docker 
 To build the docker image
 ```
-docker build -f Dockerfile -t raysam .
+docker build -f Dockerfile -t raysam:2.24.0 .
 ```
 
 To run the docker image
