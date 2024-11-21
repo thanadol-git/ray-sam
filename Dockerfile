@@ -102,7 +102,7 @@ RUN pip install --upgrade pip \
     einops \
     torch-tb-profiler \
     pyclean \
-    opencv-python  
+    opencv-python 
     # --upgrade scikit-learn
 
 RUN pip install -U "ray[data,train,tune,serve]"

@@ -131,7 +131,7 @@ def debug_notebook(training=True, inference=False):
     # NOTE (Jim): These loaders should be initialized in the train function, not here.
 
     # All hyperparameters for training
-    n_objects_per_batch = 10  # the number of objects per batch that will be sampled
+    n_objects_per_batch = 5  # the number of objects per batch that will be sampled
     n_epochs = 5  # how long we train (in epochs)
     model_type = "vit_b"  # using vit_b for faster training
     checkpoint_name = "sam_hela"
@@ -160,7 +160,7 @@ def debug_notebook(training=True, inference=False):
             "val_loader": val_loader,
             "n_epochs": n_epochs,
             "lr": 1e-5,
-            "wd": 5e-2,
+            "wd": 1e-2,
             "n_objects_per_batch": n_objects_per_batch,
             "with_segmentation_decoder": train_instance_segmentation,
             "device": "ray",
