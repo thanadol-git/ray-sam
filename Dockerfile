@@ -41,11 +41,14 @@ ENV HOME /home/raysam_user
 
 WORKDIR $HOME
 
+RUN mkdir -p /workspace && \
+  chown -R raysam_user:raysam_user /workspace
+
 # Change ownership of the application directory to the non-root user
 RUN chown -R raysam_user:raysam_user $HOME
 
 # switch to that user
-USER $USER
+USER raysam_user
 
 # install miniconda
 ENV MINICONDA_VERSION py312_24.9.2-0
@@ -77,7 +80,7 @@ SHELL ["conda", "run", "--no-capture-output", "-n", "raysam", "/bin/bash", "-c"]
 RUN echo "source activate raysam" > ~/.bashrc
 
 # ENV PATH /opt/conda/envs/dev/bin:$PATH
-ENV PATH $HOME/miniconda3/envs/dev/bin:$PATH
+ENV PATH $HOME/miniconda3/envs/raysam/bin:$PATH
 
 RUN conda install -c anaconda pip \ 
     && conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia --yes \
@@ -108,10 +111,10 @@ ENV SHELL=/bin/bash
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 
-RUN env > /root/env.txt #&& cron -f
+RUN env > $HOME/env.txt #&& cron -f
 
 # RUN /bin/bash -c "source activate raysam"
 
-CMD ["/bin/bash"]
+CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root"]
 # CMD [ "jupyter", "lab", "--no-browser", "--ip", "0.0.0.0" ]
 LABEL org.opencontainers.image.source="https://github.com/thanadol-git/RaySam/"
