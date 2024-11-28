@@ -679,25 +679,51 @@ def default_sam_dataset(
     return dataset
 
 
+# def default_sam_loader_distributed(**kwargs) -> DataLoader:
+#     """Create a distributed DataLoader for training SAM with Ray."""
+#     sam_ds_kwargs, extra_kwargs = split_kwargs(default_sam_dataset, **kwargs)
+
+#     # Get dataset
+#     ds = default_sam_dataset(**sam_ds_kwargs)
+
+#     # Add DistributedSampler for distributed training
+#     # sampler = torch.utils.data.DistributedSampler(ds)
+
+#     # Update loader kwargs to use the distributed sampler
+#     loader_kwargs = {
+#         # "sampler": sampler,
+#         "shuffle": True,  # Shuffle is handled by DistributedSampler
+#         **extra_kwargs
+#     }
+
+#     return torch_em.segmentation.get_data_loader(ds, **loader_kwargs)
+
 def default_sam_loader_distributed(**kwargs) -> DataLoader:
-    """Create a distributed DataLoader for training SAM with Ray."""
+    """Create a PyTorch DataLoader for training a SAM model in a distributed setup.
+
+    Args:
+        kwargs: Keyword arguments for `micro_sam.training.default_sam_dataset` or for the PyTorch DataLoader.
+
+    Returns:
+        The DataLoader.
+    """
+    # Split the arguments for the dataset and the DataLoader
     sam_ds_kwargs, extra_kwargs = split_kwargs(default_sam_dataset, **kwargs)
 
-    # Get dataset
-    ds = default_sam_dataset(**sam_ds_kwargs)
+    # Further split the arguments for the segmentation dataset and the DataLoader
+    extra_ds_kwargs, loader_kwargs = split_kwargs(torch_em.default_segmentation_dataset, **extra_kwargs)
 
-    # Add DistributedSampler for distributed training
-    # sampler = torch.utils.data.DistributedSampler(ds)
+    # Combine the dataset-specific arguments
+    ds_kwargs = {**sam_ds_kwargs, **extra_ds_kwargs}
 
-    # Update loader kwargs to use the distributed sampler
-    loader_kwargs = {
-        # "sampler": sampler,
-        "shuffle": True,  # Shuffle is handled by DistributedSampler
-        **extra_kwargs
-    }
+    # Ensure shuffle is set for the DataLoader
+    loader_kwargs.setdefault("shuffle", True)
 
+    # Create the dataset
+    ds = default_sam_dataset(**ds_kwargs)
+
+    # Create the DataLoader
     return torch_em.segmentation.get_data_loader(ds, **loader_kwargs)
-
 
 CONFIGURATIONS = {
     "Minimal": {"model_type": "vit_t", "n_objects_per_batch": 4, "n_sub_iteration": 4},

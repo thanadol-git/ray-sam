@@ -154,6 +154,16 @@ def get_dataloaders(
         The PyTorch DataLoader for training.
         The PyTorch DataLoader for validation.
     """
+
+    train_image_paths = [os.path.abspath(path) for path in train_image_paths]
+    train_label_paths = [os.path.abspath(path) for path in train_label_paths]
+    val_image_paths = [os.path.abspath(path) for path in val_image_paths]
+    val_label_paths = [os.path.abspath(path) for path in val_label_paths]
+
+    # Debug: Print paths
+    print("Train image paths:", train_image_paths)
+    print("Train label paths:", train_label_paths)
+    
     # Load images from tif stacks by setting `raw_key` and `label_key` to None.
     raw_key, label_key = None, None
 

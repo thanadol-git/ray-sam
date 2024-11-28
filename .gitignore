@@ -174,3 +174,4 @@ cython_debug/
 /data
 /tmp
 /ray_results
+/logs
