@@ -33,7 +33,7 @@ from ray.train import ScalingConfig
 from ray.train.torch import TorchTrainer
 
 def download_dataset(
-    path: Union[os.PathLike, str], split: Literal['train', 'val', 'test'], download: bool = False,
+    path: Union[os.PathLike, str], split: Literal['train', 'val', 'test'], download: bool = True,
 ) -> Tuple[List[str], List[str]]:
     """Download the HPA dataset.
 
@@ -164,7 +164,7 @@ def get_dataloaders(
     # labels to the desired instances for finetuning Segment Anythhing, or, to learn the foreground and distances
     # to the object centers and object boundaries for automatic segmentation.
 
-    train_loader = sam_training.default_sam_loader(
+    train_loader = sam_training.default_sam_loader_distributed(
         raw_paths=train_image_paths,
         raw_key=raw_key,
         label_paths=train_label_paths,
@@ -179,7 +179,7 @@ def get_dataloaders(
         n_samples=100,
     )
 
-    val_loader = sam_training.default_sam_loader(
+    val_loader = sam_training.default_sam_loader_distributed(
         raw_paths=val_image_paths,
         raw_key=raw_key,
         label_paths=val_label_paths,
@@ -201,45 +201,36 @@ def get_dataloaders(
 
 
 def run_finetuning(
-  train_loader: DataLoader,
-  val_loader: DataLoader,
-  save_root: Optional[Union[os.PathLike, str]],
-  train_instance_segmentation: bool,
-  device: Union[torch.device, str],
-  model_type: str,
-  overwrite: bool
+    train_loader: DataLoader,
+    val_loader: DataLoader,
+    save_root: Optional[Union[os.PathLike, str]],
+    train_instance_segmentation: bool,
+    device: Union[torch.device, str],
+    model_type: str,
+    overwrite: bool,
 ) -> str:
-    """Run distributed finetuning for the Segment Anything model using Ray."""
-
-    # Initialize Ray if not already initialized
-    if not ray.is_initialized():
-        ray.init()
-
+    """Run finetuning for the Segment Anything model on microscopy images using Ray for distributed training."""
     # All hyperparameters for training
     n_objects_per_batch = 5
     n_epochs = 5
     checkpoint_name = "sam_hpa"
 
-    # Check for existing checkpoint
     if save_root is None:
         save_root = os.getcwd()
 
-    best_checkpoint = os.path.join(save_root, "checkpoints", checkpoint_name, "best.pt")
+    best_checkpoint = os.path.join(save_root, "checkpoints", checkpoint_name, "checkpoint_best.pt")
     if os.path.exists(best_checkpoint) and not overwrite:
-        print("Found existing checkpoint. Use --overwrite to retrain.")
+        print(
+            "It looks like the training has completed. You must pass the argument '--overwrite' to overwrite "
+            "the already finetuned model (or provide a new filepath at '--save_root' for training new models)."
+        )
         return best_checkpoint
 
-    # Configure Ray distributed training
-    scaling_config = ScalingConfig(
-        num_workers=2,  # Adjust based on your available resources
-        use_gpu=True,
-        resources_per_worker={
-            "CPU": 3,
-            "GPU": 1,
-        },
-    )
+    # Initialize Ray if not already initialized
+    if not ray.is_initialized():
+        ray.init()
 
-    # Training configuration
+    # Create the train configuration
     train_config = {
         "name": checkpoint_name,
         "save_root": save_root,
@@ -254,20 +245,32 @@ def run_finetuning(
         "device": "ray",
     }
 
-    # Initialize the distributed trainer
+    # Configure the scaling for distributed training
+    scaling_config = ScalingConfig(
+        num_workers=2,  # Adjust according to your available resources
+        use_gpu=True,
+        resources_per_worker={
+            "CPU": 2,
+            "GPU": 1,
+        },
+    )
+
+    # Set up the trainer using Ray's TorchTrainer
     trainer = TorchTrainer(
-        train_loop_per_worker=sam_training.train_sam_worker,  # You'll need to implement this
+        train_loop_per_worker=sam_training.train_sam_worker,
         train_loop_config=train_config,
         scaling_config=scaling_config,
         run_config=ray.train.RunConfig(
-            storage_path=os.path.join(save_root, "ray_results"),
-            name="sam_distributed_training",
+            storage_path=os.path.join(save_root, "tmp", "sam_finetuning_ray"),
+            name="sam_finetuning_ray",
         ),
     )
 
     # Run distributed training
     result = trainer.fit()
-    print(f"Training completed with result: {result}")
+
+    # The best checkpoint is saved during training
+    best_checkpoint = os.path.join(save_root, "checkpoints", checkpoint_name, "checkpoint_best.pt")
 
     return best_checkpoint
 
@@ -318,7 +321,7 @@ def run_instance_segmentation_with_decoder(
 
 def main():
     import argparse
-    parser = argparse.ArgumentParser(description="Run distributed finetuning for Segment Anything model.")
+    parser = argparse.ArgumentParser(description="Run finetuning for Segment Anything model for microscopy images.")
     parser.add_argument(
         "-i", "--input_path", type=str, default="./data",
         help="The filepath to the folder where the image data will be downloaded. "
@@ -340,23 +343,13 @@ def main():
         "--device", type=str, default=None, help="The choice of device to run training and inference."
     )
     parser.add_argument(
-    "--num_workers", type=int, default=2,
-    help="Number of Ray workers for distributed training"
-    )
-    parser.add_argument(
-    "--cpus_per_worker", type=int, default=2,
-    help="Number of CPUs per worker"
-    )
-    parser.add_argument(
-    "--gpus_per_worker", type=int, default=1,
-    help="Number of GPUs per worker"
+        "--num_workers", type=int, default=2, help="The number of worker processes for distributed training.",
     )
     args = parser.parse_args()
 
-    device = util.get_device(args.device)  # the device / GPU used for training and inference.
+    device = 'ray'  # Indicate that we are using Ray for distributed training
 
     # The model_type determines which base model is used to initialize the weights that are finetuned.
-    # We use vit_b here because it can be trained faster. Note that vit_h usually yields higher quality results.
     model_type = "vit_b"
 
     # Train an additional convolutional decoder for end-to-end automatic instance segmentation
@@ -371,8 +364,6 @@ def main():
     verify_inputs(image_paths=train_image_paths, label_paths=train_label_paths)
 
     # Step 3: Preprocess input images.
-    # NOTE: Segment Anything accepts inputs of either 1 channel or 3 channels. To finetune SAM on your data,
-    # it is necessary to select either 1 channel or 3 channels out of the 4 channels available in the data.
     preprocess_inputs(image_paths=train_image_paths)
     preprocess_inputs(image_paths=val_image_paths)
     preprocess_inputs(image_paths=test_image_paths)
@@ -391,7 +382,7 @@ def main():
         train_instance_segmentation=train_instance_segmentation,
     )
 
-    # Step 5: Run the finetuning for Segment Anything Model.
+    # Step 5: Run the finetuning for Segment Anything Model using Ray.
     checkpoint_path = run_finetuning(
         train_loader=train_loader,
         val_loader=val_loader,
@@ -404,7 +395,7 @@ def main():
 
     # Step 6: Run automatic instance segmentation using the finetuned model.
     run_instance_segmentation_with_decoder(
-        test_image_paths=test_image_paths, model_type=model_type, checkpoint=checkpoint_path, device=device,
+        test_image_paths=test_image_paths, model_type=model_type, checkpoint=checkpoint_path, device='cuda',
     )
 
 
