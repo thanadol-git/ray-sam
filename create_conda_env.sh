@@ -35,7 +35,7 @@ pip install --upgrade pip
 pip install \
     jupyter jupyterlab \
     h5py torchsummary timm tensorboard \
-    einops torch-tb-profiler pyclean \
+    einops torch-tb-profiler pyclean imagecodecs \
     "ray[data,train,tune,serve]==2.24.0"
 
 echo "Conda environment $CONDA_ENV_NAME created successfully!"

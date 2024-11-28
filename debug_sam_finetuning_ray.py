@@ -23,7 +23,6 @@ from torch_em.util.util import get_random_colors
 
 import sys
 
-# sys.path.append('/home/scheng/workspace/RaySam/micro-sam-ray')
 import micro_sam_ray.training as sam_training
 from micro_sam_ray.sample_data import (
     fetch_tracking_example_data,
@@ -70,7 +69,7 @@ def run_automatic_instance_segmentation(
 
 
 def debug_notebook(training=True, inference=False):
-    root_dir = "/storage/raysam_user/GitHub/RaySam"  # overwrite to set the root directory, where the data, checkpoints, and all relevant stuff will be stored
+    root_dir = "/storage/raysam_user"  # overwrite to set the root directory, where the data, checkpoints, and all relevant stuff will be stored
 
     DATA_FOLDER = os.path.join(root_dir, "data")
     os.makedirs(DATA_FOLDER, exist_ok=True)
@@ -146,7 +145,7 @@ def debug_notebook(training=True, inference=False):
             num_workers=2,  # number of worker processes
             use_gpu=True,  # use GPU
             resources_per_worker={
-                "CPU": 8,  # limit CPU cores per worker
+                "CPU": 2,  # limit CPU cores per worker
                 "GPU": 1,  # each worker gets 2 GPUs
             },
         )

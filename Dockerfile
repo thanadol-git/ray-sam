@@ -89,7 +89,7 @@ RUN conda install -c anaconda pip \
         pyyaml --yes \
     && conda clean --all --yes
 
-RUN pip install --upgrade pip \
+    RUN pip install --upgrade pip \
     && pip3 install --no-cache-dir -U jupyter jupyterlab \
     h5py \
     torchsummary \
@@ -98,9 +98,9 @@ RUN pip install --upgrade pip \
     einops \
     torch-tb-profiler \
     pyclean \
-    # --upgrade scikit-learn
+    imagecodecs \
+    && pip install -U "ray[data,train,tune,serve]==2.24.0"
 
-RUN pip install -U "ray[data,train,tune,serve]==2.24.0"
 
 ENV SHELL=/bin/bash
 
