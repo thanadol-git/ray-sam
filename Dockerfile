@@ -114,4 +114,4 @@ RUN env > /root/env.txt #&& cron -f
 
 CMD ["/bin/bash"]
 # CMD [ "jupyter", "lab", "--no-browser", "--ip", "0.0.0.0" ]
-LABEL org.opencontainers.image.source="https://github.com/thanadol-git/RaySam/"
+LABEL org.opencontainers.image.source="https://github.com/thanadol-git/ray-sam/"
