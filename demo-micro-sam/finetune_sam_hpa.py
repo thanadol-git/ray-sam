@@ -222,7 +222,7 @@ def run_finetuning(
     """
     # All hyperparameters for training.
     n_objects_per_batch = 5  # the number of objects per batch that will be sampled
-    n_epochs = 5  # how long we train (in epochs)
+    n_epochs = 1  # how long we train (in epochs)
 
     # The name of the checkpoint. The checkpoints will be stored in './checkpoints/<checkpoint_name>'
     checkpoint_name = "sam_hpa"

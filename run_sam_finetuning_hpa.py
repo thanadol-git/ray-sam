@@ -161,8 +161,8 @@ def get_dataloaders(
     val_label_paths = [os.path.abspath(path) for path in val_label_paths]
 
     # Debug: Print paths
-    print("Train image paths:", train_image_paths)
-    print("Train label paths:", train_label_paths)
+    # print("Train image paths:", train_image_paths)
+    # print("Train label paths:", train_label_paths)
     
     # Load images from tif stacks by setting `raw_key` and `label_key` to None.
     raw_key, label_key = None, None
@@ -222,19 +222,11 @@ def run_finetuning(
     """Run finetuning for the Segment Anything model on microscopy images using Ray for distributed training."""
     # All hyperparameters for training
     n_objects_per_batch = 5
-    n_epochs = 5
+    n_epochs = 20
     checkpoint_name = "sam_hpa"
 
     if save_root is None:
         save_root = os.getcwd()
-
-    best_checkpoint = os.path.join(save_root, "checkpoints", checkpoint_name, "checkpoint_best.pt")
-    if os.path.exists(best_checkpoint) and not overwrite:
-        print(
-            "It looks like the training has completed. You must pass the argument '--overwrite' to overwrite "
-            "the already finetuned model (or provide a new filepath at '--save_root' for training new models)."
-        )
-        return best_checkpoint
 
     # Initialize Ray if not already initialized
     if not ray.is_initialized():
@@ -260,7 +252,7 @@ def run_finetuning(
         num_workers=2,  # Adjust according to your available resources
         use_gpu=True,
         resources_per_worker={
-            "CPU": 2,
+            "CPU": 4,
             "GPU": 1,
         },
     )
@@ -279,16 +271,25 @@ def run_finetuning(
     # Run distributed training
     result = trainer.fit()
 
-    # The best checkpoint is saved during training
-    best_checkpoint = os.path.join(save_root, "checkpoints", checkpoint_name, "checkpoint_best.pt")
+    # Retrieve the actual checkpoint directory
+    checkpoint_dir = result.checkpoint.to_directory()  # Extracts the checkpoint to a local directory
+    checkpoint_path = os.path.join(checkpoint_dir, "sam_hpa", "best.pt")
 
-    return best_checkpoint
+    # Verify the checkpoint exists
+    if not os.path.exists(checkpoint_path):
+        raise FileNotFoundError(
+            f"Checkpoint not found at {checkpoint_path}. Please check the training process or the checkpoint directory."
+        )
 
+    return checkpoint_path
+
+
+import os
 
 def run_instance_segmentation_with_decoder(
     test_image_paths: List[str], model_type: str, checkpoint: Union[os.PathLike, str], device: Union[torch.device, str],
 ):
-    """Run automatic instance segmentation (AIS).
+    """Run automatic instance segmentation (AIS) and save the results to the 'ray_tuning_result' folder.
 
     Args:
         test_image_paths: List of filepaths for the test image data.
@@ -298,12 +299,16 @@ def run_instance_segmentation_with_decoder(
     """
     assert os.path.exists(checkpoint), "Please train the model first to run inference on the finetuned model."
 
+    # Create the output directory
+    output_dir = "tmp/ray_tuning_result"
+    os.makedirs(output_dir, exist_ok=True)
+
     # Get the 'predictor' and 'segmenter' to perform automatic instance segmentation.
     predictor, segmenter = get_predictor_and_segmenter(
         model_type=model_type, checkpoint=checkpoint, device=device, is_tiled=True
     )
 
-    for image_path in test_image_paths:
+    for idx, image_path in enumerate(test_image_paths):
         image = imageio.imread(image_path)
         image = normalize_to_8bit(image)
 
@@ -312,21 +317,31 @@ def run_instance_segmentation_with_decoder(
             predictor=predictor, segmenter=segmenter, input_path=image, ndim=2, tile_shape=(768, 768), halo=(128, 128)
         )
 
-        # Visualize the predictions
-        fig, ax = plt.subplots(1, 2, figsize=(10, 10))
+        # Save the input image and prediction as separate files
+        input_image_path = os.path.join(output_dir, f"input_image_{idx}.png")
+        prediction_image_path = os.path.join(output_dir, f"prediction_{idx}.png")
 
-        ax[0].imshow(image)
-        ax[0].axis("off")
-        ax[0].set_title("Input Image")
-
-        ax[1].imshow(prediction, cmap=get_random_colors(prediction), interpolation="nearest")
-        ax[1].axis("off")
-        ax[1].set_title("Predictions (AIS)")
-
-        plt.show()
+        # Save the input image
+        plt.figure(figsize=(10, 10))
+        plt.imshow(image, cmap="gray")
+        plt.axis("off")
+        plt.title("Input Image")
+        plt.savefig(input_image_path, bbox_inches="tight")
         plt.close()
 
-        break  # comment this out in case you want to run inference for all images.
+        # Save the prediction
+        plt.figure(figsize=(10, 10))
+        plt.imshow(prediction, cmap=get_random_colors(prediction), interpolation="nearest")
+        plt.axis("off")
+        plt.title("Predictions (AIS)")
+        plt.savefig(prediction_image_path, bbox_inches="tight")
+        plt.close()
+
+        print(f"Saved input image to: {input_image_path}")
+        print(f"Saved prediction to: {prediction_image_path}")
+
+        # Uncomment the following line if you want to process all images
+        # break  # Comment this out to process all images
 
 
 def main():
