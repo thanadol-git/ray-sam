@@ -1,0 +1,10 @@
+channels:
+    - pytorch
+    - nvidia
+    - conda-forge
+dependencies:
+    - python=3.11.9
+    - micro_sam
+    - pip
+    - pip:
+      - ray[data,train,tune,serve]=2.24.0

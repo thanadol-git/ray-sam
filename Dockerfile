@@ -1,35 +1,9 @@
 FROM nvidia/cuda:12.1.1-cudnn8-devel-ubuntu22.04
 
-# ARG UID
-# ARG GID
-# ARG USER
-# ARG GROUP
-
-# SHELL [ "/bin/bash", "--login", "-c" ]
-
-# install utilities
-# RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    apt-utils \
-    curl \
-    ca-certificates \
-    sudo \
+RUN apt-get update -y && apt-get install -y \
     wget \
-    bzip2 \
-    libx11-6 \
-    ssh-client \
-    bash-completion \
-    libgl1-mesa-dev \
-    cifs-utils \
-    uidmap \
-    libjemalloc-dev \
-    openssh-client \
-    libjpeg-dev \
-    libpng-dev \
-    libopenmpi-dev \
-    mpich \
-    && rm -rf /var/lib/apt/lists/*
+    git \
+    && apt-get clean
 
 # Create a non-root user
 RUN groupadd -r raysam_user && useradd -r -g raysam_user raysam_user
@@ -85,17 +59,18 @@ RUN conda install -c anaconda pip \
         natsort python-xxhash segment-anything \
         python-elf kornia zarr pooch \
         pandas numpy pillow \
-        scikit-learn scikit-image \
+        #scikit-learn\
+        scikit-image \
         pyyaml --yes \
     && conda clean --all --yes
 
     RUN pip install --upgrade pip \
-    && pip3 install --no-cache-dir -U jupyter jupyterlab \
-    h5py \
-    torchsummary \
+    && pip3 install --no-cache-dir -U \
+    # h5py \
+    # torchsummary \
     timm \
     tensorboard \
-    einops \
+    # einops \
     torch-tb-profiler \
     pyclean \
     imagecodecs \
@@ -110,8 +85,9 @@ ENV LANG=C.UTF-8
 
 RUN env > /root/env.txt #&& cron -f
 
-# RUN /bin/bash -c "source activate raysam"
-
-CMD ["/bin/bash"]
-# CMD [ "jupyter", "lab", "--no-browser", "--ip", "0.0.0.0" ]
-LABEL org.opencontainers.image.source="https://github.com/thanadol-git/ray-sam/"
+COPY torch_em/ $HOME/torch_em/
+COPY micro_sam_ray/ $HOME/micro_sam_ray/
+COPY run_sam_finetuning_hpa.py $HOME/run_sam_finetuning_hpa.py 
+COPY download_datasets.py $HOME/download_datasets.py
+ENTRYPOINT [ "/bin/bash" ]
+# ENTRYPOINT [ "python", "run_sam_finetuning.py" ]
