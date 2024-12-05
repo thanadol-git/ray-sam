@@ -6,6 +6,15 @@ on open-source microscopy images with multiple channels.
 We use confocal microscopy images from the HPA Kaggle Challenge for protein identification
 (from Ouyang et al. - https://doi.org/10.1038/s41592-019-0658-6) in this script for the cell segmentation task.
 The functionalities shown here should work for your (microscopy) images too.
+
+
+COMMAND:
+docker run -it --shm-size 20G --gpus all \
+  -v /home/scheng/workspace/RaySam/:/storage/raysam_user/ \
+  -e RAY_TMPDIR=/storage/raysam_user/tmp \
+  raysam:2.24.0
+
+
 """
 
 import os
@@ -222,7 +231,7 @@ def run_finetuning(
     """Run finetuning for the Segment Anything model on microscopy images using Ray for distributed training."""
     # All hyperparameters for training
     n_objects_per_batch = 5
-    n_epochs = 20
+    n_epochs = 100
     checkpoint_name = "sam_hpa"
 
     if save_root is None:
