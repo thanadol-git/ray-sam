@@ -22,7 +22,6 @@ from torch.utils.data import DataLoader
 from torch_em.util.debug import check_loader
 from torch_em.util.util import get_random_colors
 
-from micro_sam_ray import util
 import micro_sam_ray.training as sam_training
 from micro_sam_ray.training.util import normalize_to_8bit
 from micro_sam_ray.automatic_segmentation import get_predictor_and_segmenter, automatic_instance_segmentation
@@ -32,6 +31,7 @@ from download_datasets import _get_hpa_data_paths
 import ray
 from ray.train import ScalingConfig
 from ray.train.torch import TorchTrainer
+
 
 def download_dataset(
     path: Union[os.PathLike, str], split: Literal['train', 'val', 'test'], download: bool = True,
@@ -216,9 +216,8 @@ def run_finetuning(
     val_loader: DataLoader,
     save_root: Optional[Union[os.PathLike, str]],
     train_instance_segmentation: bool,
-    device: Union[torch.device, str],
     model_type: str,
-    overwrite: bool,
+    **ray_init_kwargs,
 ) -> str:
     """Run finetuning for the Segment Anything model on microscopy images using Ray for distributed training."""
     # All hyperparameters for training
@@ -231,7 +230,7 @@ def run_finetuning(
 
     # Initialize Ray if not already initialized
     if not ray.is_initialized():
-        ray.init()
+        ray.init(ray_init_kwargs)
 
     # Create the train configuration
     train_config = {
@@ -284,8 +283,6 @@ def run_finetuning(
 
     return checkpoint_path
 
-
-import os
 
 def run_instance_segmentation_with_decoder(
     test_image_paths: List[str], model_type: str, checkpoint: Union[os.PathLike, str], device: Union[torch.device, str],

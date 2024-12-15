@@ -24,9 +24,9 @@ This is the project repository for WASP Scalable Data Science and Distributed Ma
 ## Installation 
 
 ### Docker 
-To build the docker image
+To download the docker image
 ```
-docker build -f Dockerfile -t raysam:2.24.0 .
+docker pull ghcr.io/thanadol-git/ray-sam:latest
 ```
 
 To run the docker image
