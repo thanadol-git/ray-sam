@@ -31,14 +31,19 @@ docker build -f Dockerfile -t raysam:2.24.0 .
 
 To run the docker image
 ```
-docker run -it --shm-size 60G --name raysam --gpus all -v YourLocalPath:/storage/raysam_user/ raysam:2.24.0 /bin/bash
+docker run -it --shm-size 20G --gpus all \
+  -v YOUR_LOCAL_PATH:/storage/raysam_user/ \
+  -e RAY_TMPDIR=/storage/raysam_user/tmp \
+  raysam:2.24.0
+
 ```
 
 NOTE: Replace *YourLocalPath* with your own path.
 
 ## TODO List
-- [ ] Move the dataloaders into the training function
-- [ ] Modify the training function ```sam_training.train_sam_worker``` for ray
+- [x] Move the dataloaders into the training function
+- [x] Modify the training function ```sam_training.train_sam_worker``` for ray
 - [x] Now the training function is working with ray. See the ```debug_sam_finetuning_ray.py```. Refer to the notebook ```sam_finetuning_ray.ipynb``` for data preparation.
+- [x] Automatically download, preprocess, finetuning model, and run automatic instance segmentation using the finetuned model and test data. See the ```run_sam_finetuning_hpa.py```
 
 NOTE: The ```sam_finetuning_ray``` notebook can now be debugged and run on the local machine within a docker container, with an error triggered by the ```result = trainer.fit()``` as it's not adapted. --Jim 
