@@ -35,7 +35,11 @@ docker run -it --shm-size 20G --gpus all \
   -v YOUR_LOCAL_PATH:/storage/raysam_user/ \
   -e RAY_TMPDIR=/storage/raysam_user/tmp \
   raysam:2.24.0
-
+```
+To run the code:
+```
+# In the docker image:
+cd /storage/raysam_user/
 ```
 
 NOTE: Replace *YourLocalPath* with your own path.
