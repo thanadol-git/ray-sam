@@ -52,7 +52,7 @@ To run the code:
 cd /storage/raysam_user/ray-sam
 
 # Run the demo
-python demo_sam_finetuning_ray
+python demo_sam_finetuning_ray.py
 ```
 
 NOTE: Replace *YOUR_LOCAL_PATH* with your own path.
