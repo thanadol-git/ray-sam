@@ -48,8 +48,11 @@ docker run -it --shm-size 20G --gpus all \
 ```
 To run the code:
 ```
-# In the docker image:
-cd /storage/raysam_user/
+# Go to the project directory
+cd /storage/raysam_user/ray-sam
+
+# Run the demo
+python demo_sam_finetuning_ray
 ```
 
 NOTE: Replace *YOUR_LOCAL_PATH* with your own path.
