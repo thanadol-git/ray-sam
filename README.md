@@ -50,6 +50,10 @@ cd /storage/raysam_user/ray-sam
 
 # Run the demo
 python demo_sam_finetuning_ray.py
+
+# Run with the Human Protein Atlas(HPA) dataset:
+
+python run_sam_finetuning_hpa.py
 ```
 
 NOTE: Replace *YOUR_LOCAL_PATH* with your own path.
