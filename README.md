@@ -12,10 +12,13 @@ This is the project repository for WASP Scalable Data Science and Distributed Ma
 
 
 ## Teams 
-- Thanadol Sutantiwanichkul
-- Songtao Cheng
-- Nils Mechtel 
-- Jingyu Guo
+- Jingyu Guo$^{1}$
+- Nils Mechtel$^{2}$
+- Songtao Cheng$^{2}$
+- Thanadol Sutantiwanichkul$^{3}$
+
+
+
 
 ## Project Plan
 
