@@ -69,7 +69,12 @@ conda activate raysam
 ETC. 
 
 ## Contribution 
-- Jingyu Guo: Docker image, Ray system, and Jupyter notebooks
+- Jingyu Guo
+  - Training and Evaluation Scripts with Ray: Developed training and evaluation scripts using the micro-sam and torch-em frameworks, which were further optimized for seamless integration with Ray to ensure scalability and efficiency. Conducted thorough debugging and testing on both local machines and servers to guarantee reliability and robustness.
+  - Docker Image: Developed a Docker image specifically tailored to meet the project’s requirements, ensuring that all dependencies are effectively managed.
+  - Jupyter Notebooks: Designed and implemented the Jupyter notebooks to enable scalable fine-tuning of models. 
+  - Group Discussions and Presentation: Actively engaged in group discussions to share insights, gave and received feedback, and contributed to the final presentation.
+
 - Nils Mechtel: Ray system, and Jupyter notebooks
 - Songtao Cheng: Ray system, and Jupyter notebooks
 - Thanadol Sutantiwanichkul: 
