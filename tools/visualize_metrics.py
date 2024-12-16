@@ -3,10 +3,10 @@ import os
 import matplotlib.pyplot as plt
 
 # File path to the result.json
-file_path = '/storage/raysam_user/tmp/sam_finetuning_ray/sam_finetuning_ray/TorchTrainer_aec84_00000_0_2024-12-15_22-05-23/result.json'
+file_path = 'saved_runs/hpa_dataset/result.json'
 
 # Output directory for saving plots
-output_dir = './plots'
+output_dir = 'saved_runs/hpa_dataset/plots'
 os.makedirs(output_dir, exist_ok=True)
 
 # Function to read and parse the JSON file
