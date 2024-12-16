@@ -20,7 +20,7 @@ conda update -n base -c defaults conda -y
 conda create -n $CONDA_ENV_NAME python=$PYTHON_VERSION -y
 
 # Activate the environment
-source activate $CONDA_ENV_NAME
+conda activate $CONDA_ENV_NAME
 
 # Install packages
 conda install -c anaconda pip -y
