@@ -8,7 +8,6 @@ import warnings
 warnings.filterwarnings("once")
 
 from glob import glob
-from IPython.display import FileLink
 
 import numpy as np
 import imageio.v3 as imageio
