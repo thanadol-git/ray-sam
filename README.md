@@ -82,6 +82,7 @@ ETC.
 - Nils Mechtel: Ray system, and Jupyter notebooks
 - Songtao Cheng: Ray system, and Jupyter notebooks
 - Thanadol Sutantiwanichkul: 
-```
-In the first/second weeks, I took a lead on data selection and preprocessing. I was contacting the HPA IT in order to use the most possible resources for our project. We ended with pre-trained image and masks. I also join the weekly meeting and also help the hwole team on leading discussions. I tried some code and implemented some training. 
-```
+  - Contacting the Human Protein Atlas (HPA) IT: Established communication with the HPA IT team to obtain the necessary resources for the project, including pre-trained images and masks.
+  - Weekly Meetings: Participated in weekly meetings to discuss project progress, share insights, and provide feedback to the team.
+  - Code Implementation: Conducted code implementation and training to contribute to the project’s development.
+  - Discussion and review of the project: attending the meeting and follow up on the project progress.
