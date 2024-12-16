@@ -1,6 +1,14 @@
 ![raysam_header](https://github.com/user-attachments/assets/f22662d4-b2ac-446a-9142-7e0d15e8be97)
 
-This is the project repository for WASP Scalable Data Science and Distributed Machine Learning 2024. Our group want to apply the distributed machine learning to the ray systems that will be available in the future at the Science for Life Laboratory (SciLifeLab) in Stockholm. Here, we will uuse the state-of-the-art deep learning model for image segmentation, called Segment Anything Model (SAM), to predict the cell type of the images. It has been eailier implemented in several bioimages with the tool called micro-SAM. We will use the ray system to scale the training of the model to a large dataset. This can be easily implemented with standard jupyter notebooks and python scripts. One can also use docker image to run the code. We plan to scale in different ways, such as scaling the number of images, scaling the number of nodes, and scaling the number of GPUs. 
+This is the project repository for **WASP Scalable Data Science and Distributed Machine Learning 2024 Group 3**.  
+
+In this project, we fine-tuned the **Segment Anything Model (SAM)**, an advanced vision foundation model developed by Meta AI. SAM is designed for promptable segmentation tasks and is a highly versatile tool for image segmentation across diverse domains. For more information, you can explore the [SAM GitHub repository](https://github.com/facebookresearch/segment-anything) and the accompanying paper, ["Segment Anything"](https://arxiv.org/abs/2304.02643).  
+
+We built on the fine-tuning approach demonstrated by the [micro SAM repository](https://github.com/computational-cell-analytics/micro-sam), which specializes in adapting SAM to fluorescence microscopy datasets. Our project introduces a novel contribution by leveraging the **Ray framework** to enable scalable, distributed training of SAM, making it suitable for handling large-scale microscopy datasets.  
+
+To achieve this, we utilized **Ray Train** and its [`TorchTrainer`](https://docs.ray.io/en/latest/train/api/doc/ray.train.torch.TorchTrainer.html) module. The `TorchTrainer` is a tool designed for data-parallel PyTorch training, automating the setup of distributed environments for scalable execution. It launches multiple workers as specified in the scaling configuration, establishes a distributed PyTorch environment for those workers, and seamlessly ingests input datasets. Each worker executes the user-defined `train_loop_per_worker` function, which contains the core training logic. This framework allowed us to scale SAM fine-tuning efficiently across multiple nodes, making it highly adaptable to large microscopy datasets.  
+
+This repository includes the code, configuration files, and documentation required to reproduce our results and experiment further with distributed fine-tuning of SAM.
 
 ## Team Members
 - Jingyu Guo (jingyug@kth.se) $^{1}$
