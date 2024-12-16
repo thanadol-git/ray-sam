@@ -31,10 +31,7 @@ docker pull ghcr.io/thanadol-git/ray-sam:latest
 
 To run the docker image
 ```
-docker run -it --shm-size 20G --gpus all \
-  -v YOUR_LOCAL_PATH:/storage/raysam_user/ \
-  -e RAY_TMPDIR=/storage/raysam_user/tmp \
-  raysam:2.24.0
+docker run -it --shm-size 20G --gpus all -v YOUR_LOCAL_PATH:/storage/raysam_user/ -e RAY_TMPDIR=/storage/raysam_user/tmp raysam:2.24.0
 ```
 To run the code:
 ```

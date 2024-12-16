@@ -1,0 +1,15 @@
+{
+  "train_loop_config": {
+    "device": "ray",
+    "lr": 1e-05,
+    "model_type": "vit_b",
+    "n_epochs": 100,
+    "n_objects_per_batch": 5,
+    "name": "sam_hpa",
+    "save_root": "/storage/raysam_user",
+    "train_loader": "<torch.utils.data.dataloader.DataLoader object at 0x7fe1cf07b550>",
+    "val_loader": "<torch.utils.data.dataloader.DataLoader object at 0x7fe1cc0883d0>",
+    "wd": 0.01,
+    "with_segmentation_decoder": true
+  }
+}
