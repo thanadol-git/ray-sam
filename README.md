@@ -63,6 +63,6 @@ ETC.
 - Nils Mechtel: Ray system, and Jupyter notebooks
 - Songtao Cheng: Ray system, and Jupyter notebooks
 - Thanadol Sutantiwanichkul: 
-```
-In the first/second weeks, I took a lead on data selection and preprocessing. I went to the it unit at HPA. 
+`````````
+In the first/second weeks, I took a lead on data selection and preprocessing. I went to contact the HPA IT in order to use the most possible resources for our project. 
 ```
