@@ -17,7 +17,20 @@ $^{3}$ Division of Systems Biology, School of Engineering Sciences in Chemistry,
 link to the [presentation](https://docs.google.com/presentation/d/1KyzPKBo25B9-GNr_semnD0oxbj-Y88YiK_fBCCQF9fQ/edit?usp=sharing)
 
 
-## Project Structure
+## Turotials 
+### Jupyter notebooks
+
+Create Conda Environment
+```
+bash create_conda_env.sh
+```
+
+Activate Conda Environment
+```
+conda activate raysam
+```
+
+ETC. 
 
 
 ### Docker 
@@ -40,11 +53,3 @@ cd /storage/raysam_user/
 ```
 
 NOTE: Replace *YourLocalPath* with your own path.
-
-## TODO List
-- [x] Move the dataloaders into the training function
-- [x] Modify the training function ```sam_training.train_sam_worker``` for ray
-- [x] Now the training function is working with ray. See the ```debug_sam_finetuning_ray.py```. Refer to the notebook ```sam_finetuning_ray.ipynb``` for data preparation.
-- [x] Automatically download, preprocess, finetuning model, and run automatic instance segmentation using the finetuned model and test data. See the ```run_sam_finetuning_hpa.py```
-
-NOTE: The ```sam_finetuning_ray``` notebook can now be debugged and run on the local machine within a docker container, with an error triggered by the ```result = trainer.fit()``` as it's not adapted. --Jim 
