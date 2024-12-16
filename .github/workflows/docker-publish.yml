@@ -33,3 +33,5 @@ jobs:
           tags: ghcr.io/${{ github.repository }}:latest
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
