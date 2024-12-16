@@ -15,7 +15,7 @@ This is the project repository for WASP Scalable Data Science and Distributed Ma
 - Jingyu Guo (jingyug@kth.se) $^{1}$
 - Nils Mechtel (mechtel@kth.se) $^{2}$
 - Songtao Cheng (songtaoc@kth.se) $^{2}$
-- Thanadol Sutantiwanichkul (thanadol@kth.se)$^{3}$
+- Thanadol Sutantiwanichkul (thanadol@kth.se) $^{3}$
 
 $^{1}$ Division of Computational Science and Technology, School of Electrical Engineering and Computer Science, KTH Royal Institute of Technology
 
