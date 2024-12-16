@@ -18,20 +18,6 @@ link to the [presentation](https://docs.google.com/presentation/d/1KyzPKBo25B9-G
 
 
 ## Turotials 
-### Jupyter notebooks
-
-Create Conda Environment
-```
-bash create_conda_env.sh
-```
-
-Activate Conda Environment
-```
-conda activate raysam
-```
-
-ETC. 
-
 
 ### Docker 
 To download the docker image
@@ -52,4 +38,19 @@ To run the code:
 cd /storage/raysam_user/
 ```
 
-NOTE: Replace *YourLocalPath* with your own path.
+NOTE: Replace *YOUR_LOCAL_PATH* with your own path.
+
+### Jupyter notebooks
+
+Create Conda Environment
+```
+bash create_conda_env.sh
+```
+
+Activate Conda Environment
+```
+conda activate raysam
+```
+
+ETC. 
+
