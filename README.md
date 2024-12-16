@@ -1,7 +1,3 @@
-![raysam header](https://github.com/user-attachments/assets/4ad09c19-4309-4f7f-b752-920c2059691f)
-
-
-# RaySam
 This is the project repository for WASP Scalable Data Science and Distributed Machine Learning 2024. Our group want to apply the distributed machine learning to the ray systems that will be available in the future at the Science for Life Laboratory (SciLifeLab) in Stockholm. Here, we will uuse the state-of-the-art deep learning model for image segmentation, called Spatially Adaptive Denormalization (SAM), to predict the cell type of the images. It has been eailier implemented in several bioimages with the tool called micro-SAM. We will use the ray system to scale the training of the model to a large dataset. This can be easily implemented with standard jupyter notebooks and python scripts. One can also use docker image to run the code. We plan to scale in different ways, such as scaling the number of images, scaling the number of nodes, and scaling the number of GPUs. 
 
 ## Team Members
@@ -21,6 +17,11 @@ link to the [presentation](https://docs.google.com/presentation/d/1KyzPKBo25B9-G
 
 
 ## Turotials 
+
+### Ray cluster
+To set up the Ray cluster, please follow the instructions in the [Ray documentation](https://docs.ray.io/en/latest/cluster/getting-started.html). 
+
+To deploy ray cluster on Kubernetes using the KubeRay project, follow the instruction in [KubeRay Readme](kuberay-cluster/).
 
 ### Docker 
 To download the docker image
@@ -57,3 +58,11 @@ conda activate raysam
 
 ETC. 
 
+## Contribution 
+- Jingyu Guo: Docker image, Ray system, and Jupyter notebooks
+- Nils Mechtel: Ray system, and Jupyter notebooks
+- Songtao Cheng: Ray system, and Jupyter notebooks
+- Thanadol Sutantiwanichkul: 
+```
+In the first/second weeks, I took a lead on data selection and preprocessing. I went to the it unit at HPA. 
+```
