@@ -1,5 +1,5 @@
-![raysam_header](https://github.com/user-attachments/assets/f22662d4-b2ac-446a-9142-7e0d15e8be97)
 
+![kaggle header](https://github.com/user-attachments/assets/79e41d49-3d9a-4960-8ee0-22d3e14b4dd7)
 This is the project repository for **WASP Scalable Data Science and Distributed Machine Learning 2024 Group 3**.  
 
 In this project, we fine-tuned the **Segment Anything Model (SAM)**, an advanced vision foundation model developed by Meta AI. SAM is designed for promptable segmentation tasks and is a highly versatile tool for image segmentation across diverse domains. For more information, you can explore the [SAM GitHub repository](https://github.com/facebookresearch/segment-anything) and the accompanying paper, ["Segment Anything"](https://arxiv.org/abs/2304.02643).  
