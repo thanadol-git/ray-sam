@@ -80,7 +80,11 @@ ETC.
   - Group Discussions and Presentation: Actively engaged in group discussions to share insights, gave and received feedback, and contributed to the final presentation.
 
 - Nils Mechtel: Ray system, and Jupyter notebooks
-- Songtao Cheng: Ray system, and Jupyter notebooks
+- Songtao Cheng: 
+    -   **Dataset**: Finding the Human Protein Atlas (HPA) dataset with annotated masks for use in the project.
+    -   **Training and Evaluation Scripts with Ray**: Modified the `micro_sam` and `torch_em` frameworks to ensure compatibility with Ray. Developed code for fine-tuning the SAM model using the HPA dataset.
+    -   **Docker Image**: Contributed to improving the Docker image by debugging, optimizing, and reducing its file size. To make sure the image could be built and published on GitHub.
+    -   **Group Meetings and Discussions**: Attended meetings and followed up on project progress.
 - Thanadol Sutantiwanichkul: 
   - Contacting the Human Protein Atlas (HPA) IT: Established communication with the HPA IT team to obtain the necessary resources for the project, including pre-trained images and masks.
   - Weekly Meetings: Participated in weekly meetings to discuss project progress, share insights, and provide feedback to the team.
