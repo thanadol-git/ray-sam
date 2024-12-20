@@ -51,7 +51,7 @@ cd /storage/raysam_user/ray-sam
 # Run the demo
 python demo_sam_finetuning_ray.py
 
-# Run with the Human Protein Atlas(HPA) dataset:
+# Run with the Human Protein Atlas (HPA) dataset:
 
 python run_sam_finetuning_hpa.py
 ```
@@ -70,23 +70,31 @@ Activate Conda Environment
 conda activate raysam
 ```
 
-ETC. 
 
-## Contribution 
-- Jingyu Guo
-  - Training and Evaluation Scripts with Ray: Developed training and evaluation scripts using the micro-sam and torch-em frameworks, which were further optimized for seamless integration with Ray to ensure scalability and efficiency. Conducted thorough debugging and testing on both local machines and servers to guarantee reliability and robustness.
-  - Docker Image: Developed a Docker image specifically tailored to meet the project’s requirements, ensuring that all dependencies are effectively managed.
-  - Jupyter Notebooks: Designed and implemented the Jupyter notebooks to enable scalable fine-tuning of models. 
-  - Group Discussions and Presentation: Actively engaged in group discussions to share insights, gave and received feedback, and contributed to the final presentation.
+## Contribution  
 
-- Nils Mechtel: Ray system, and Jupyter notebooks
-- Songtao Cheng: 
-    -   **Dataset**: Finding the Human Protein Atlas (HPA) dataset with annotated masks for use in the project.
-    -   **Training and Evaluation Scripts with Ray**: Modified the `micro_sam` and `torch_em` frameworks to ensure compatibility with Ray. Developed code for fine-tuning the SAM model using the HPA dataset.
-    -   **Docker Image**: Contributed to improving the Docker image by debugging, optimizing, and reducing its file size. To make sure the image could be built and published on GitHub.
-    -   **Group Meetings and Discussions**: Attended meetings and followed up on project progress.
-- Thanadol Sutantiwanichkul: 
-  - Contacting the Human Protein Atlas (HPA) IT: Established communication with the HPA IT team to obtain the necessary resources for the project, including pre-trained images and masks.
-  - Weekly Meetings: Participated in weekly meetings to discuss project progress, share insights, and provide feedback to the team.
-  - Code Implementation: Conducted code implementation and training to contribute to the project’s development.
-  - Discussion and review of the project: attending the meeting and follow up on the project progress.
+Throughout the project, we met weekly as a team to discuss progress, plan next steps, and work together on solutions. These meetings were important for delegating tasks, troubleshooting code, and brainstorming strategies for fine-tuning SAM. Below you will find the individual contributions of each team member:  
+
+- **Jingyu Guo**  
+  - **Training and Evaluation Scripts with Ray**: Developed training and evaluation scripts using the `micro-sam` and `torch-em` frameworks, optimized for seamless integration with Ray to ensure scalability and efficiency. Conducted thorough debugging and testing on both local machines and servers to ensure reliability and robustness.  
+  - **Docker Image**: Developed a Docker image tailored to the project’s requirements, ensuring effective dependency management.  
+  - **Jupyter Notebooks**: Designed and implemented Jupyter notebooks for fine-tuning models.  
+
+- **Nils Mechtel**  
+  - **Dataset**: Assisted in identifying the correct dataset for training and fine-tuning the model.  
+  - **Fine-Tuning SAM with Ray**: Investigated approaches to fine-tune the SAM model for microscopy images, including analyzing its model components and training scripts.  
+  - **Ray Cluster Setup**: Configured and deployed Ray cluster, including a local setup and a Kuberay cluster on KTH Kubernetes.  
+  - **Runtime Environment and Docker**: Set up the Ray runtime environment and contributed to Docker image creation.  
+  - **Jupyter Notebooks**: Debugged and improved Jupyter notebooks for the project.  
+
+- **Songtao Cheng**  
+  - **Dataset**: Found the HPA dataset with annotated masks for use in the project.  
+  - **Training and Evaluation Scripts with Ray**: Modified the `micro-sam` and `torch-em` frameworks to ensure compatibility with Ray. Developed code for fine-tuning the SAM model using the HPA dataset.  
+  - **Docker Image**: Contributed to improving the Docker image by debugging, optimizing, and reducing its file size to ensure it could be built and published on GitHub.  
+
+- **Thanadol Sutantiwanichkul**  
+  - **Dataset**: Coordinated with the HPA IT team to obtain the necessary resources for the project, such as ground truth images and masks.  
+  - **Docker Image**: Contributed to debugging the Docker image.  
+  - **Fine-Tuning SAM**: Played a key role in code development and training.  
+  - **Project Review and Discussion**: Actively engaged in project review meetings and follow-ups.  
+  - **GitHub Readme**: Wrote the majority of this project's Readme.  
