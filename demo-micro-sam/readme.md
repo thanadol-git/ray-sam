@@ -1,3 +1,7 @@
+# Introduction
+
+This is a demo for the micro SAM model. You can follow try running the demo code in this folder to see how the micro SAM model trains and predicts.
+
 # To build the docker image
 ```
 docker build -f Dockerfile -t raysam .
