@@ -98,3 +98,7 @@ Throughout the project, we met weekly as a team to discuss progress, plan next s
   - **Fine-Tuning SAM**: Played a key role in code development and training.  
   - **Project Review and Discussion**: Actively engaged in project review meetings and follow-ups.  
   - **GitHub Readme**: Wrote the majority of this project's Readme.  
+
+## Acknowledgements
+
+This project was partially supported by the Wallenberg AI, Autonomous Systems and Software Program funded by Knut and Alice Wallenberg Foundation to fufill the requirements to pass the WASP Graduate School Course Scalable Data Science and Distributed Machine Learning - ScaDaMaLe-WASP-UU-2024 at https://lamastex.github.io/ScaDaMaLe. Computing infrastructure for learning was supported by Databricks Inc.'s Community Edition. The course was Industrially sponsored by Jim Dowling of Logical Clocks AB, Stockholm, Sweden, Reza Zadeh of Matroid Inc., Palo Alto, California, USA, and Andreas Hellander & Salman Toor of Scaleout Systems AB, Uppsala, Sweden.
