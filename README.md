@@ -23,7 +23,7 @@ $^{2}$ Division of Applied Physics, School of Engineering Sciences, KTH Royal In
 $^{3}$ Division of Systems Biology, School of Engineering Sciences in Chemistry, Biotechnology and Health, KTH Royal Institute of Technology
 
 ## Link to documents 
-Link to the [presentation](https://docs.google.com/presentation/d/1KyzPKBo25B9-GNr_semnD0oxbj-Y88YiK_fBCCQF9fQ/edit?usp=sharing)
+Link to the [presentation](https://docs.google.com/presentation/d/1KyzPKBo25B9-GNr_semnD0oxbj-Y88YiK_fBCCQF9fQ/edit?usp=sharing). We also attached the [PDF version](Presentation.pdf) in the repository.
 
 
 ## Turotials 
