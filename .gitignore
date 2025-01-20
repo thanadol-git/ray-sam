@@ -1,3 +1,7 @@
+# Custom ignore rules for RaySam
+saved_runs/
+trg_dir/
+
 # Template for Python projects
 
 # Demo notebooks

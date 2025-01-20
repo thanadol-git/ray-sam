@@ -10,7 +10,7 @@ To achieve this, we utilized **Ray Train** and its [`TorchTrainer`](https://docs
 
 This repository includes the code, configuration files, and documentation required to reproduce our results and experiment further with distributed fine-tuning of SAM.
 
-## Team Members
+# Team Members
 - Jingyu Guo (jingyug@kth.se) $^{1}$
 - Nils Mechtel (mechtel@kth.se) $^{2}$
 - Songtao Cheng (songtaoc@kth.se) $^{2}$
@@ -22,43 +22,32 @@ $^{2}$ Division of Applied Physics, School of Engineering Sciences, KTH Royal In
 
 $^{3}$ Division of Systems Biology, School of Engineering Sciences in Chemistry, Biotechnology and Health, KTH Royal Institute of Technology
 
-## Link to documents 
+# Link to documents 
 Link to the [presentation](https://docs.google.com/presentation/d/1KyzPKBo25B9-GNr_semnD0oxbj-Y88YiK_fBCCQF9fQ/edit?usp=sharing). We also attached the [PDF version](Presentation.pdf) in the repository.
 
 
-## Turotials 
+# Turotials 
 
-### Ray cluster
-A general introduction to Raz clusters can be found in the [Ray documentation](https://docs.ray.io/en/latest/cluster/getting-started.html).
+## Ray cluster
+A general introduction to Ray clusters can be found in the [Ray documentation](https://docs.ray.io/en/latest/cluster/getting-started.html).
 
 To deploy a Ray cluster on Kubernetes using the KubeRay project, follow the instruction in [KubeRay Readme](kuberay-cluster/).
 
-### Docker 
-To download the docker image
+## Setup the environment 
+
+One can easily run the code using the provided [Docker](https://www.docker.com/) image.
+
+To download the docker image:
 ```
 docker pull ghcr.io/thanadol-git/ray-sam:latest
 ```
 
-To run the docker image
+To run the docker image, replace ```YOUR_LOCAL_PATH``` with your own path:
 ```
 docker run -it --shm-size 20G --gpus all -v YOUR_LOCAL_PATH:/storage/raysam_user/ -e RAY_TMPDIR=/storage/raysam_user/tmp raysam:2.24.0
 ```
-To run the code:
-```
-# Go to the project directory
-cd /storage/raysam_user/ray-sam
 
-# Run the demo
-python demo_sam_finetuning_ray.py
-
-# Run with the Human Protein Atlas (HPA) dataset:
-
-python run_sam_finetuning_hpa.py
-```
-
-NOTE: Replace *YOUR_LOCAL_PATH* with your own path.
-
-### Jupyter notebooks
+An alternative way to run the code is to create a virtual environment using [Conda](https://docs.conda.io/en/latest/).
 
 Create Conda Environment
 ```
@@ -70,8 +59,19 @@ Activate Conda Environment
 conda activate raysam
 ```
 
+## Fine-tuning SAM with Ray
+Run the demo:
+```
+python demo_sam_finetuning_ray.py
+```
+Or try the jupyter notebook in the `notebooks` folder.
 
-## Contribution  
+Run with the Human Protein Atlas (HPA) dataset:
+```
+python run_sam_finetuning_hpa.py
+```
+
+# Contributions
 
 Throughout the project, we met weekly as a team to discuss progress, plan next steps, and work together on solutions. These meetings were important for delegating tasks, troubleshooting code, and brainstorming strategies for fine-tuning SAM. Below you will find the individual contributions of each team member:  
 
@@ -99,6 +99,8 @@ Throughout the project, we met weekly as a team to discuss progress, plan next s
   - **Project Review and Discussion**: Actively engaged in project review meetings and follow-ups.  
   - **GitHub Readme**: Wrote the majority of this project's Readme.  
 
-## Acknowledgements
+# Acknowledgements
+
+This project is based on [Segment Anything for Microscopy](https://github.com/computational-cell-analytics/micro-sam) and [torch_em](https://github.com/constantinpape/torch-em). Thanks for their wonderful works.
 
 This project was partially supported by the Wallenberg AI, Autonomous Systems and Software Program funded by Knut and Alice Wallenberg Foundation to fufill the requirements to pass the WASP Graduate School Course Scalable Data Science and Distributed Machine Learning - ScaDaMaLe-WASP-UU-2024 at https://lamastex.github.io/ScaDaMaLe. Computing infrastructure for learning was supported by Databricks Inc.'s Community Edition. The course was Industrially sponsored by Jim Dowling of Logical Clocks AB, Stockholm, Sweden, Reza Zadeh of Matroid Inc., Palo Alto, California, USA, and Andreas Hellander & Salman Toor of Scaleout Systems AB, Uppsala, Sweden.
