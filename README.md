@@ -49,13 +49,9 @@ docker run -it --shm-size 20G --gpus all -v YOUR_LOCAL_PATH:/storage/raysam_user
 
 An alternative way to run the code is to create a virtual environment using [Conda](https://docs.conda.io/en/latest/).
 
-Create Conda Environment
+Create and activate a Conda environment:
 ```
 bash create_conda_env.sh
-```
-
-Activate Conda Environment
-```
 conda activate raysam
 ```
 
